@@ -1,32 +1,39 @@
-const handleSubmit = async (e) => {
-  e.preventDefault();
+import api from "./api";
 
-  try {
-    setSubmitting(true);
-    setError("");
+// Create Booking
+export const createBooking = async (bookingData) => {
+  const { data } = await api.post("/bookings", bookingData);
+  return data;
+};
 
-    const res = await createBooking(formData);
+// Track Booking
+export const trackBooking = async (bookingId) => {
+  const { data } = await api.get(`/bookings/track/${bookingId}`);
+  return data;
+};
 
-    console.log("Booking Response:", res);
+// Get All Bookings (Admin)
+export const getBookings = async () => {
+  const { data } = await api.get("/bookings");
+  return data;
+};
 
-    if (res.success) {
-      setBooking(res.data);
+// Get Single Booking
+export const getBookingById = async (id) => {
+  const { data } = await api.get(`/bookings/${id}`);
+  return data;
+};
 
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    } else {
-      setError("Booking failed.");
-    }
-  } catch (err) {
-    console.log(err);
+// Update Booking Status
+export const updateBookingStatus = async (id, status) => {
+  const { data } = await api.put(`/bookings/${id}/status`, {
+    status,
+  });
+  return data;
+};
 
-    setError(
-      err.response?.data?.message ||
-      "Booking failed."
-    );
-  } finally {
-    setSubmitting(false);
-  }
+// Delete Booking
+export const deleteBooking = async (id) => {
+  const { data } = await api.delete(`/bookings/${id}`);
+  return data;
 };
