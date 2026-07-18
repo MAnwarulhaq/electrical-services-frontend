@@ -9,7 +9,7 @@ import Services from "./pages/Services";
 import ServiceDetails from "./pages/ServiceDetails";
 import Booking from "./pages/Booking";
 import Contact from "./pages/Contact";
-import TrackBooking from "./pages/TrackBooking";
+import TrackBooking from "./pages/Trackbooking";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
@@ -112,7 +112,7 @@ function App() {
         path="/admin/dashboard"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            {/* <Dashboard /> */}
           </ProtectedRoute>
         }
       />
