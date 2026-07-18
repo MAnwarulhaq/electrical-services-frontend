@@ -24,9 +24,7 @@ export const getUserProfile = () => {
   const token = localStorage.getItem("userToken");
 
   return api.get("/users/profile", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+   
   });
 };
 

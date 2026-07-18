@@ -30,7 +30,7 @@ const initialForm = {
 
 const Booking = () => {
 
-  const navigate = useNavigate();
+
 
   const [searchParams] = useSearchParams();
 
@@ -59,19 +59,26 @@ const Booking = () => {
 
 
 
+
+  const navigate = useNavigate();
+
   const token = localStorage.getItem("userToken");
+
+
+  // console.log(token)
 
 
 
   // LOGIN CHECK
 
   useEffect(() => {
-
     if (!token) {
       navigate("/login");
+      return;
     }
 
-  }, [token, navigate]);
+    loadData();
+  }, [token]);
 
 
 
@@ -109,7 +116,6 @@ const Booking = () => {
       ]);
 
 
-
       setServices(
         servicesRes.data || []
       );
@@ -132,23 +138,23 @@ const Booking = () => {
           ...prev,
 
           fullName:
-            user.fullName || "",
+            user?.fullName || "",
 
 
           mobileNumber:
-            user.mobileNumber || "",
+            user?.mobileNumber || "",
 
 
           whatsappNumber:
-            user.mobileNumber || "",
+            user?.whatsappNumber || "",
 
 
           email:
-            user.email || "",
+            user?.email || "",
 
 
           address:
-            user.address || "",
+            user?.address || "",
 
         }));
 
@@ -600,11 +606,7 @@ const Booking = () => {
 
 
 
-          <div className="
-      grid
-      md:grid-cols-2
-      gap-6
-      ">
+          <div className="grid md:grid-cols-2 gap-6">
 
 
             <Input
@@ -728,7 +730,7 @@ const Booking = () => {
 
                     key={service._id}
 
-                    value={service._id}
+                    value={service?._id}
 
                   >
 
@@ -771,13 +773,13 @@ const Booking = () => {
 
                   <option
 
-                    key={area._id}
+                    key={area?._id}
 
-                    value={area._id}
+                    value={area?._id}
 
                   >
 
-                    {area.name}
+                    {area?.name}
 
                   </option>
 

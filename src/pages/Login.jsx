@@ -40,7 +40,7 @@ const Login = () => {
 
       // Redirect to previous page or booking
       const redirectTo =
-        location.state?.from?.pathname || "/booking";
+        location.state?.from?.pathname || "/";
 
       navigate(redirectTo, { replace: true });
     } catch (err) {
