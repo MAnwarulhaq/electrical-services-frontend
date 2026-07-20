@@ -4,14 +4,20 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
+
 api.interceptors.request.use((config) => {
   const token =
-    localStorage.getItem("userToken") ||
-    localStorage.getItem("adminToken");
+    localStorage.getItem("adminToken") ||
+    localStorage.getItem("userToken");
 
-  
+  console.log("TOKEN:", token);
+  console.log("URL:", config.url);
 
-  config.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  console.log("AUTH HEADER:", config.headers.Authorization);
 
   return config;
 });

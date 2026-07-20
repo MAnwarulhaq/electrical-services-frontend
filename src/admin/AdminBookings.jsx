@@ -95,6 +95,8 @@ const AdminBookings = () => {
         params,
       });
 
+      console.log("Bookings API Response:", response.data?.data);
+
       setBookings(response.data?.data || []);
       setTotal(response.data?.total || 0);
       setPages(response.data?.pages || 1);
@@ -202,7 +204,7 @@ const AdminBookings = () => {
 
       setBookings((previousBookings) =>
         previousBookings.map((booking) =>
-          booking._id === bookingMongoId
+          booking?._id === bookingMongoId
             ? updatedBooking
             : booking
         )

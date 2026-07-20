@@ -36,17 +36,21 @@ const Dashboard = () => {
       setLoading(true);
       setError("");
 
-      const [
-        bookingsResponse,
-        servicesResponse,
-        messagesResponse,
-        electriciansResponse,
-      ] = await Promise.allSettled([
+      const results = await Promise.allSettled([
         api.get("/bookings?limit=100"),
         api.get("/services/admin/all"),
         api.get("/contact"),
         api.get("/electricians"),
       ]);
+
+      console.log(results);
+
+      const [
+        bookingsResponse,
+        servicesResponse,
+        messagesResponse,
+        electriciansResponse,
+      ] = results;
 
       if (bookingsResponse.status === "fulfilled") {
         setBookings(bookingsResponse.value.data?.data || []);
@@ -79,7 +83,7 @@ const Dashboard = () => {
       console.error("Dashboard error:", err);
       setError(
         err.response?.data?.message ||
-          "Unable to load dashboard data."
+        "Unable to load dashboard data."
       );
     } finally {
       setLoading(false);
@@ -89,6 +93,9 @@ const Dashboard = () => {
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+
+
 
   const stats = useMemo(
     () => ({
@@ -128,11 +135,10 @@ const Dashboard = () => {
       <aside
         className={`fixed lg:static inset-y-0 left-0 z-50 w-72
         bg-slate-950 text-white transform transition-transform duration-300
-        ${
-          sidebarOpen
+        ${sidebarOpen
             ? "translate-x-0"
             : "-translate-x-full lg:translate-x-0"
-        }`}
+          }`}
       >
         <div className="h-full flex flex-col">
           <div className="h-20 px-6 flex items-center justify-between border-b border-slate-800">
@@ -206,7 +212,7 @@ const Dashboard = () => {
                 navigate("/admin/messages")
               }
             />
-             <SidebarItem
+            <SidebarItem
               icon={<FaEnvelope />}
               label="Settings"
               badge={stats.unreadMessages}
@@ -373,8 +379,8 @@ const Dashboard = () => {
                           <td className="p-4">
                             {booking.preferredDate
                               ? new Date(
-                                  booking.preferredDate
-                                ).toLocaleDateString()
+                                booking.preferredDate
+                              ).toLocaleDateString()
                               : "N/A"}
                           </td>
 
@@ -458,11 +464,10 @@ const SidebarItem = ({
   <button
     onClick={onClick}
     className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl
-    transition text-left ${
-      active
+    transition text-left ${active
         ? "bg-yellow-400 text-slate-950 font-black"
         : "text-slate-300 hover:bg-slate-800 hover:text-white"
-    }`}
+      }`}
   >
     <span className="text-lg">{icon}</span>
     <span className="flex-1">{label}</span>
@@ -525,9 +530,8 @@ const StatusBadge = ({ status = "pending" }) => {
 
   return (
     <span
-      className={`inline-flex px-3 py-1 rounded-full text-xs font-bold capitalize ${
-        styles[status] || "bg-slate-100 text-slate-600"
-      }`}
+      className={`inline-flex px-3 py-1 rounded-full text-xs font-bold capitalize ${styles[status] || "bg-slate-100 text-slate-600"
+        }`}
     >
       {status}
     </span>

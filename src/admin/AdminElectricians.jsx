@@ -559,9 +559,9 @@ const AdminElectricians = () => {
         <div className="grid gap-6 md:grid-cols-2 2xl:grid-cols-3">
           {filteredElectricians.map((electrician) => (
             <ElectricianCard
-              key={electrician._id}
+              key={electrician?._id}
               electrician={electrician}
-              updating={updatingId === electrician._id}
+              updating={updatingId === electrician?._id}
               getImageUrl={getImageUrl}
               onEdit={() => openEditModal(electrician)}
               onDelete={() => handleDelete(electrician)}
