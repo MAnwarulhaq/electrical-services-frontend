@@ -10,6 +10,8 @@ import { getServices } from "../services/serviceApi";
 import { getServiceAreas } from "../services/serviceAreaApi";
 import { createBooking } from "../services/bookingApi";
 import { getUserProfile } from "../services/userApi";
+import { useUserAuth } from "../context/UserAuthContext";
+
 
 
 const initialForm = {
@@ -30,7 +32,7 @@ const initialForm = {
 
 const Booking = () => {
 
-
+  const { user } = useUserAuth();
 
   const [searchParams] = useSearchParams();
 
@@ -81,59 +83,47 @@ const Booking = () => {
   }, [token]);
 
 
- const loadData = async () => {
-  try {
-    setLoading(true);
-    setError("");
-
-    const servicesRes = await getServices();
-    const areasRes = await getServiceAreas();
-
-    setServices(
-      servicesRes?.data?.data || servicesRes?.data || []
-    );
-
-    setAreas(
-      areasRes?.data?.data || areasRes?.data || []
-    );
-
+  const loadData = async () => {
     try {
-      const profileRes = await getUserProfile();
+      setLoading(true);
+      setError("");
 
-      const user =
-        profileRes?.data?.data ||
-        profileRes?.data?.user ||
-        profileRes?.data;
+      const servicesRes = await getServices();
+      const areasRes = await getServiceAreas();
 
-      if (user) {
-        setFormData((prev) => ({
-          ...prev,
-          fullName: user.fullName || "",
-          mobileNumber: user.mobileNumber || "",
-          whatsappNumber:
-            user.whatsappNumber ||
-            user.mobileNumber ||
-            "",
-          email: user.email || "",
-          address: user.address || "",
-        }));
-      }
-    } catch (error) {
-      console.log("Profile Error:", error.response?.data);
+      setServices(
+        servicesRes?.data?.data || servicesRes?.data || []
+      );
+
+      setAreas(
+        areasRes?.data?.data || areasRes?.data || []
+      );
+
+    
+    } catch (err) {
+      console.log(err);
+
+      setError(
+        err.response?.data?.message ||
+        "Unable to load booking page."
+      );
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.log(err);
+  };
 
-    setError(
-      err.response?.data?.message ||
-      "Unable to load booking page."
-    );
-  } finally {
-    setLoading(false);
-  }
-};
-
-
+    useEffect(() => {
+        if (user) {
+          setFormData((prev) => ({
+            ...prev,
+            fullName: user.fullName || "",
+            mobileNumber: user.mobileNumber || "",
+            whatsappNumber: user.whatsappNumber || user.mobileNumber || "",
+            email: user.email || "",
+            address: user.address || "",
+          }));
+        }
+      }, [user]);
 
 
   // SERVICE FROM URL
@@ -186,39 +176,39 @@ const Booking = () => {
 
   // SUBMIT BOOKING
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  try {
-    setSubmitting(true);
-    setError("");
+    try {
+      setSubmitting(true);
+      setError("");
 
-    const res = await createBooking(formData);
+      const res = await createBooking(formData);
 
-    console.log("Booking Response:", res.data);
+      console.log("Booking Response:", res.data);
 
-    setBooking({
-      ...res.data.data,
-      bookingId:
-        res.data.bookingId ||
-        res.data.data.bookingId,
-    });
+      setBooking({
+        ...res.data.data,
+        bookingId:
+          res.data.bookingId ||
+          res.data.data.bookingId,
+      });
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  } catch (err) {
-    console.log(err);
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    } catch (err) {
+      console.log(err);
 
-    setError(
-      err.response?.data?.message ||
-      "Booking failed."
-    );
-  } finally {
-    setSubmitting(false);
-  }
-};
+      setError(
+        err.response?.data?.message ||
+        "Booking failed."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
 
 
