@@ -10,14 +10,14 @@ api.interceptors.request.use((config) => {
     localStorage.getItem("adminToken") ||
     localStorage.getItem("userToken");
 
-  console.log("TOKEN:", token);
-  console.log("URL:", config.url);
+  // console.log("TOKEN:", token);
+  // console.log("URL:", config.url);
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
-  console.log("AUTH HEADER:", config.headers.Authorization);
+  // console.log("AUTH HEADER:", config.headers.Authorization);
 
   return config;
 });
