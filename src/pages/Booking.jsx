@@ -10,8 +10,6 @@ import { getServices } from "../services/serviceApi";
 import { getServiceAreas } from "../services/serviceAreaApi";
 import { createBooking } from "../services/bookingApi";
 import { getUserProfile } from "../services/userApi";
-import { useUserAuth } from "../context/UserAuthContext";
-
 
 
 const initialForm = {
@@ -32,118 +30,173 @@ const initialForm = {
 
 const Booking = () => {
 
-  const { user } = useUserAuth();
+  const navigate = useNavigate();
 
   const [searchParams] = useSearchParams();
 
   const serviceId = searchParams.get("service");
 
 
-  const [formData, setFormData] = useState({
+  const [formData,setFormData] = useState({
     ...initialForm,
     service: serviceId || "",
   });
 
 
-  const [services, setServices] = useState([]);
+  const [services,setServices] = useState([]);
 
-  const [areas, setAreas] = useState([]);
-
-
-  const [loading, setLoading] = useState(true);
-
-  const [submitting, setSubmitting] = useState(false);
+  const [areas,setAreas] = useState([]);
 
 
-  const [booking, setBooking] = useState(null);
+  const [loading,setLoading] = useState(true);
 
-  const [error, setError] = useState("");
-
-
+  const [submitting,setSubmitting] = useState(false);
 
 
-  const navigate = useNavigate();
+  const [booking,setBooking] = useState(null);
+
+  const [error,setError] = useState("");
+
+
 
   const token = localStorage.getItem("userToken");
-
-
-  // console.log(token)
 
 
 
   // LOGIN CHECK
 
-  useEffect(() => {
-    if (!token) {
+  useEffect(()=>{
+
+    if(!token){
       navigate("/login");
-      return;
     }
 
+  },[token,navigate]);
+
+
+
+
+  // LOAD DATA
+
+  useEffect(()=>{
+
     loadData();
-  }, [token]);
+
+  },[]);
 
 
-  const loadData = async () => {
-    try {
+
+  const loadData = async()=>{
+
+    try{
+
       setLoading(true);
-      setError("");
 
-      const servicesRes = await getServices();
-      const areasRes = await getServiceAreas();
+
+      const [
+        servicesRes,
+        areasRes,
+        profileRes
+
+      ] = await Promise.all([
+
+        getServices(),
+
+        getServiceAreas(),
+
+        getUserProfile()
+
+      ]);
+
+
 
       setServices(
-        servicesRes?.data?.data || servicesRes?.data || []
+        servicesRes.data || []
       );
+
 
       setAreas(
-        areasRes?.data?.data || areasRes?.data || []
+        areasRes.data || []
       );
 
-    
-    } catch (err) {
+
+
+      if(profileRes.data.success){
+
+        const user =
+        profileRes.data.data;
+
+
+        setFormData(prev=>({
+
+          ...prev,
+
+          fullName:
+          user.fullName || "",
+
+
+          mobileNumber:
+          user.mobileNumber || "",
+
+
+          whatsappNumber:
+          user.mobileNumber || "",
+
+
+          email:
+          user.email || "",
+
+
+          address:
+          user.address || "",
+
+        }));
+
+      }
+
+
+
+    }catch(err){
+
       console.log(err);
+
 
       setError(
         err.response?.data?.message ||
         "Unable to load booking page."
       );
-    } finally {
+
+
+    }finally{
+
       setLoading(false);
+
     }
+
   };
 
-    useEffect(() => {
-        if (user) {
-          setFormData((prev) => ({
-            ...prev,
-            fullName: user.fullName || "",
-            mobileNumber: user.mobileNumber || "",
-            whatsappNumber: user.whatsappNumber || user.mobileNumber || "",
-            email: user.email || "",
-            address: user.address || "",
-          }));
-        }
-      }, [user]);
+
+
 
 
   // SERVICE FROM URL
 
-  useEffect(() => {
+  useEffect(()=>{
 
-    if (serviceId) {
+    if(serviceId){
 
-      setFormData(prev => ({
+      setFormData(prev=>({
 
         ...prev,
 
-        service: serviceId
+        service:serviceId
 
       }));
 
     }
 
 
-  }, [serviceId]);
+  },[serviceId]);
 
 
 
@@ -151,7 +204,7 @@ const Booking = () => {
 
   // INPUT CHANGE
 
-  const handleChange = (e) => {
+  const handleChange=(e)=>{
 
     const {
       name,
@@ -160,11 +213,11 @@ const Booking = () => {
 
 
 
-    setFormData(prev => ({
+    setFormData(prev=>({
 
       ...prev,
 
-      [name]: value
+      [name]:value
 
     }));
 
@@ -176,38 +229,64 @@ const Booking = () => {
 
   // SUBMIT BOOKING
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async(e)=>{
+
     e.preventDefault();
 
-    try {
+
+    try{
+
+
       setSubmitting(true);
+
       setError("");
 
-      const res = await createBooking(formData);
 
-      console.log("Booking Response:", res.data);
 
-      setBooking({
-        ...res.data.data,
-        bookingId:
-          res.data.bookingId ||
-          res.data.data.bookingId,
-      });
+      const res =
+      await createBooking(formData);
+
+
+
+      setBooking(
+        res.data.data
+      );
+
+
 
       window.scrollTo({
-        top: 0,
-        behavior: "smooth",
+
+        top:0,
+
+        behavior:"smooth"
+
       });
-    } catch (err) {
+
+
+
+    }catch(err){
+
+
       console.log(err);
 
+
       setError(
+
         err.response?.data?.message ||
         "Booking failed."
+
       );
-    } finally {
+
+
+
+    }finally{
+
+
       setSubmitting(false);
+
+
     }
+
   };
 
 
@@ -216,7 +295,7 @@ const Booking = () => {
 
   // SUCCESS PAGE
 
-  if (booking) {
+  if(booking){
 
     return (
 
@@ -242,35 +321,35 @@ const Booking = () => {
         ">
 
 
-          <FaCheckCircle
-            className="
+        <FaCheckCircle
+        className="
         text-green-500
         text-7xl
         mx-auto
         "
-          />
+        />
 
 
-          <h1 className="
+        <h1 className="
         text-4xl
         font-black
         mt-6
         ">
-            Booking Successful
-          </h1>
+          Booking Successful
+        </h1>
 
 
 
-          <p className="
+        <p className="
         text-gray-500
         mt-4
         ">
-            Your booking has been submitted successfully.
-          </p>
+          Your booking has been submitted successfully.
+        </p>
 
 
 
-          <div className="
+        <div className="
         bg-slate-950
         rounded-2xl
         mt-8
@@ -278,26 +357,26 @@ const Booking = () => {
         ">
 
 
-            <p className="text-gray-400">
-              Booking ID
-            </p>
+          <p className="text-gray-400">
+            Booking ID
+          </p>
 
 
-            <h2 className="
+          <h2 className="
           text-yellow-400
           text-3xl
           font-black
           mt-2
           ">
-              {booking.bookingId}
-            </h2>
+            {booking.bookingId}
+          </h2>
 
 
-          </div>
+        </div>
 
 
 
-          <div className="
+        <div className="
         grid
         md:grid-cols-2
         gap-4
@@ -305,53 +384,53 @@ const Booking = () => {
         ">
 
 
-            <Link
-              to={`/track-booking?bookingId=${booking.bookingId}`}
-              className="
+        <Link
+        to={`/track-booking?bookingId=${booking.bookingId}`}
+        className="
         bg-yellow-400
         py-4
         rounded-xl
         font-bold
         ">
-              Track Booking
-            </Link>
+          Track Booking
+        </Link>
 
 
 
-            <button
+        <button
 
-              onClick={() => {
+        onClick={()=>{
 
-                setBooking(null);
+          setBooking(null);
 
-                setFormData({
-                  ...initialForm,
-                  fullName: formData.fullName,
-                  mobileNumber: formData.mobileNumber,
-                  whatsappNumber: formData.whatsappNumber,
-                  email: formData.email,
-                  address: formData.address
-                });
+          setFormData({
+            ...initialForm,
+            fullName:formData.fullName,
+            mobileNumber:formData.mobileNumber,
+            whatsappNumber:formData.whatsappNumber,
+            email:formData.email,
+            address:formData.address
+          });
 
 
-              }}
+        }}
 
-              className="
+        className="
         border-2
         border-slate-900
         rounded-xl
         py-4
         font-bold
         "
-            >
+        >
 
-              New Booking
+          New Booking
 
-            </button>
+        </button>
 
 
 
-          </div>
+        </div>
 
 
         </div>
@@ -362,7 +441,7 @@ const Booking = () => {
     );
 
   }
-  // ============================
+    // ============================
   // LOADING
   // ============================
 
@@ -472,11 +551,11 @@ const Booking = () => {
       ">
 
 
-        <form
+      <form
 
-          onSubmit={handleSubmit}
+      onSubmit={handleSubmit}
 
-          className="
+      className="
       bg-white
       rounded-3xl
       shadow-xl
@@ -485,10 +564,10 @@ const Booking = () => {
       ">
 
 
-          {
-            error && (
+      {
+        error && (
 
-              <div className="
+          <div className="
           bg-red-50
           border
           border-red-200
@@ -498,118 +577,122 @@ const Booking = () => {
           mb-8
           ">
 
-                {error}
+            {error}
 
-              </div>
+          </div>
 
-            )
-          }
-
-
+        )
+      }
 
 
-          <h2 className="
+
+
+      <h2 className="
       text-2xl
       font-black
       mb-7
       ">
 
-            Customer Information
+        Customer Information
 
-          </h2>
-
-
-
-
-          <div className="grid md:grid-cols-2 gap-6">
-
-
-            <Input
-
-              label="Full Name"
-
-              name="fullName"
-
-              value={formData.fullName}
-
-              onChange={handleChange}
-
-              required
-
-            />
-
-
-
-            <Input
-
-              label="Mobile Number"
-
-              name="mobileNumber"
-
-              value={formData.mobileNumber}
-
-              onChange={handleChange}
-
-              required
-
-            />
-
-
-
-            <Input
-
-              label="WhatsApp Number"
-
-              name="whatsappNumber"
-
-              value={formData.whatsappNumber}
-
-              onChange={handleChange}
-
-              required
-
-            />
-
-
-
-            <Input
-
-              label="Email"
-
-              name="email"
-
-              type="email"
-
-              value={formData.email}
-
-              onChange={handleChange}
-
-            />
-
-
-
-          </div>
+      </h2>
 
 
 
 
+      <div className="
+      grid
+      md:grid-cols-2
+      gap-6
+      ">
 
-          <h2 className="
+
+        <Input
+
+        label="Full Name"
+
+        name="fullName"
+
+        value={formData.fullName}
+
+        onChange={handleChange}
+
+        required
+
+        />
+
+
+
+        <Input
+
+        label="Mobile Number"
+
+        name="mobileNumber"
+
+        value={formData.mobileNumber}
+
+        onChange={handleChange}
+
+        required
+
+        />
+
+
+
+        <Input
+
+        label="WhatsApp Number"
+
+        name="whatsappNumber"
+
+        value={formData.whatsappNumber}
+
+        onChange={handleChange}
+
+        required
+
+        />
+
+
+
+        <Input
+
+        label="Email"
+
+        name="email"
+
+        type="email"
+
+        value={formData.email}
+
+        onChange={handleChange}
+
+        />
+
+
+
+      </div>
+
+
+
+
+
+      <h2 className="
       text-2xl
       font-black
       mt-12
       mb-7
       ">
 
-            Service Details
+        Service Details
 
-          </h2>
-
-
+      </h2>
 
 
 
-          <div className="
+
+
+      <div className="
       grid
       md:grid-cols-2
       gap-6
@@ -617,184 +700,184 @@ const Booking = () => {
 
 
 
-            <Select
+      <Select
 
-              label="Select Service"
+      label="Select Service"
 
-              name="service"
+      name="service"
 
-              value={formData.service}
+      value={formData.service}
 
-              onChange={handleChange}
+      onChange={handleChange}
 
-              required
+      required
 
-            >
+      >
 
 
-              <option value="">
-                Select Service
-              </option>
+      <option value="">
+        Select Service
+      </option>
 
 
 
-              {
-                services.map(service => (
+      {
+        services.map(service=>(
 
-                  <option
+          <option
 
-                    key={service._id}
+          key={service._id}
 
-                    value={service?._id}
+          value={service._id}
 
-                  >
+          >
 
-                    {service.name}
+          {service.name}
 
-                  </option>
+          </option>
 
-                ))
-              }
+        ))
+      }
 
 
-            </Select>
+      </Select>
 
 
 
 
 
-            <Select
+      <Select
 
-              label="Service Area"
+      label="Service Area"
 
-              name="area"
+      name="area"
 
-              value={formData.area}
+      value={formData.area}
 
-              onChange={handleChange}
+      onChange={handleChange}
 
-              required
+      required
 
-            >
+      >
 
-              <option value="">
-                Select Area
-              </option>
+      <option value="">
+        Select Area
+      </option>
 
 
 
-              {
-                areas.map(area => (
+      {
+        areas.map(area=>(
 
-                  <option
+          <option
 
-                    key={area?._id}
+          key={area._id}
 
-                    value={area?._id}
+          value={area._id}
 
-                  >
+          >
 
-                    {area?.name}
+          {area.name}
 
-                  </option>
+          </option>
 
-                ))
-              }
+        ))
+      }
 
 
-            </Select>
+      </Select>
 
 
 
 
 
-            <Input
+      <Input
 
-              label="Preferred Date"
+      label="Preferred Date"
 
-              type="date"
+      type="date"
 
-              name="preferredDate"
+      name="preferredDate"
 
-              min={
-                new Date()
-                  .toISOString()
-                  .split("T")[0]
-              }
+      min={
+        new Date()
+        .toISOString()
+        .split("T")[0]
+      }
 
-              value={formData.preferredDate}
+      value={formData.preferredDate}
 
-              onChange={handleChange}
+      onChange={handleChange}
 
-              required
+      required
 
-            />
+      />
 
 
 
 
 
-            <Input
+      <Input
 
-              label="Preferred Time"
+      label="Preferred Time"
 
-              type="time"
+      type="time"
 
-              name="preferredTime"
+      name="preferredTime"
 
-              value={formData.preferredTime}
+      value={formData.preferredTime}
 
-              onChange={handleChange}
+      onChange={handleChange}
 
-              required
+      required
 
-            />
+      />
 
 
 
 
 
-            <Select
+      <Select
 
-              label="Service Type"
+      label="Service Type"
 
-              name="serviceType"
+      name="serviceType"
 
-              value={formData.serviceType}
+      value={formData.serviceType}
 
-              onChange={handleChange}
+      onChange={handleChange}
 
-            >
+      >
 
 
-              <option value="normal">
-                Normal Service
-              </option>
+      <option value="normal">
+        Normal Service
+      </option>
 
 
-              <option value="emergency">
-                Emergency Service
-              </option>
+      <option value="emergency">
+        Emergency Service
+      </option>
 
 
-            </Select>
+      </Select>
 
 
 
 
-          </div>
+      </div>
 
 
 
 
 
-          {/* ADDRESS */}
+      {/* ADDRESS */}
 
 
-          <div className="mt-8">
+      <div className="mt-8">
 
 
-            <label className="
+      <label className="
       font-bold
       flex
       items-center
@@ -802,31 +885,31 @@ const Booking = () => {
       ">
 
 
-              <FaMapMarkerAlt
-                className="text-yellow-500"
-              />
+      <FaMapMarkerAlt
+      className="text-yellow-500"
+      />
 
 
-              Complete Address
+      Complete Address
 
 
-            </label>
+      </label>
 
 
 
-            <textarea
+      <textarea
 
-              rows="3"
+      rows="3"
 
-              required
+      required
 
-              name="address"
+      name="address"
 
-              value={formData.address}
+      value={formData.address}
 
-              onChange={handleChange}
+      onChange={handleChange}
 
-              className="
+      className="
       w-full
       mt-2
       border
@@ -838,43 +921,43 @@ const Booking = () => {
       focus:border-yellow-400
       "
 
-              placeholder="House no, Street, Area..."
+      placeholder="House no, Street, Area..."
 
-            />
-
-
-          </div>
+      />
 
 
+      </div>
 
 
 
 
-          {/* PROBLEM */}
 
 
-          <div className="mt-8">
+      {/* PROBLEM */}
 
 
-            <label className="font-bold">
-
-              Problem Description
-
-            </label>
+      <div className="mt-8">
 
 
+      <label className="font-bold">
 
-            <textarea
+        Problem Description
 
-              rows="5"
+      </label>
 
-              name="problemDescription"
 
-              value={formData.problemDescription}
 
-              onChange={handleChange}
+      <textarea
 
-              className="
+      rows="5"
+
+      name="problemDescription"
+
+      value={formData.problemDescription}
+
+      onChange={handleChange}
+
+      className="
       w-full
       mt-2
       border
@@ -886,25 +969,25 @@ const Booking = () => {
       focus:border-yellow-400
       "
 
-              placeholder="Describe your electrical problem..."
+      placeholder="Describe your electrical problem..."
 
-            />
-
-
-
-          </div>
+      />
 
 
 
+      </div>
 
 
-          <button
 
-            type="submit"
 
-            disabled={submitting}
 
-            className="
+      <button
+
+      type="submit"
+
+      disabled={submitting}
+
+      className="
       w-full
       mt-10
       bg-yellow-400
@@ -917,24 +1000,24 @@ const Booking = () => {
       disabled:opacity-50
       "
 
-          >
+      >
 
 
-            {
-              submitting
-                ?
-                "Creating Booking..."
-                :
-                "Confirm Booking"
-            }
+      {
+        submitting
+        ?
+        "Creating Booking..."
+        :
+        "Confirm Booking"
+      }
 
 
-          </button>
+      </button>
 
 
 
 
-        </form>
+      </form>
 
 
       </section>
@@ -958,41 +1041,41 @@ const Booking = () => {
 const Input = ({
   label,
   name,
-  type = "text",
+  type="text",
   value,
   onChange,
-  required = false,
+  required=false,
   min
-}) => {
+})=>{
 
 
-  return (
+return (
 
-    <div>
-
-
-      <label className="font-bold">
-
-        {label}
-
-      </label>
+<div>
 
 
-      <input
+<label className="font-bold">
 
-        type={type}
+{label}
 
-        name={name}
+</label>
 
-        value={value}
 
-        onChange={onChange}
+<input
 
-        required={required}
+type={type}
 
-        min={min}
+name={name}
 
-        className="
+value={value}
+
+onChange={onChange}
+
+required={required}
+
+min={min}
+
+className="
 w-full
 mt-2
 border
@@ -1004,14 +1087,14 @@ outline-none
 focus:border-yellow-400
 "
 
-        placeholder={label}
+placeholder={label}
 
-      />
+/>
 
 
-    </div>
+</div>
 
-  );
+);
 
 
 };
@@ -1027,38 +1110,38 @@ focus:border-yellow-400
 
 
 const Select = ({
-  label,
-  name,
-  value,
-  onChange,
-  children,
-  required = false
-}) => {
+label,
+name,
+value,
+onChange,
+children,
+required=false
+})=>{
 
 
-  return (
+return (
 
-    <div>
-
-
-      <label className="font-bold">
-
-        {label}
-
-      </label>
+<div>
 
 
-      <select
+<label className="font-bold">
 
-        name={name}
+{label}
 
-        value={value}
+</label>
 
-        onChange={onChange}
 
-        required={required}
+<select
 
-        className="
+name={name}
+
+value={value}
+
+onChange={onChange}
+
+required={required}
+
+className="
 w-full
 mt-2
 border
@@ -1071,19 +1154,19 @@ bg-white
 focus:border-yellow-400
 "
 
-      >
+>
 
 
-        {children}
+{children}
 
 
-      </select>
+</select>
 
 
-    </div>
+</div>
 
 
-  );
+);
 
 
 };

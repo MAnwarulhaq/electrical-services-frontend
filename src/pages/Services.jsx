@@ -43,7 +43,7 @@ const Services = () => {
 
     fetchServices();
   }, []);
-
+  console.log("SERVICES:", services);
   const categories = useMemo(() => {
     const values = services
       .map((service) => service.category)

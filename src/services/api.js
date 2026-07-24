@@ -5,21 +5,16 @@ const api = axios.create({
 });
 
 
-api.interceptors.request.use((config) => {
-  const token =
-    localStorage.getItem("adminToken") ||
-    localStorage.getItem("userToken");
-
-  // console.log("TOKEN:", token);
-  // console.log("URL:", config.url);
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("userToken");
+      localStorage.removeItem("userInfo");
+      // optionally: window.location.href = "/login";
+    }
+    return Promise.reject(error); // <-- critical
   }
-
-  // console.log("AUTH HEADER:", config.headers.Authorization);
-
-  return config;
-});
+);
 
 export default api;
